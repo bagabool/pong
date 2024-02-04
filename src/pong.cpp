@@ -71,7 +71,7 @@ int main()
     }
 
     FT_Face face;
-    if (FT_New_Face(ft, "arial.ttf", 0, &face))
+    if (FT_New_Face(ft, "res/fonts/arial.ttf", 0, &face))
     {
         std::cout << "ERROR::FREETYPE: Failed to load font" << std::endl;
         return -1;
@@ -135,10 +135,10 @@ int main()
     FT_Done_FreeType(ft);
 
     // shaders
-    Shader ballShader("shader.vert", "shader.frag");
-    Shader playerOneShader("shader.vert", "shader.frag");
-    Shader playerTwoShader("shader.vert", "shader.frag");
-    Shader glyphShader("glyph.vert", "glyph.frag");
+    Shader ballShader("res/shaders/shader.vert", "res/shaders/shader.frag");
+    Shader playerOneShader("res/shaders/shader.vert", "res/shaders/shader.frag");
+    Shader playerTwoShader("res/shaders/shader.vert", "res/shaders/shader.frag");
+    Shader glyphShader("res/shaders/glyph.vert", "res/shaders/glyph.frag");
 
     // ball launching side
     bool rightSide = distrib(gen) == 0;

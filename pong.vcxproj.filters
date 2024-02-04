@@ -15,65 +15,67 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="pong.cpp">
+    <ClCompile Include="src\EBO.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="EBO.cpp">
+    <ClCompile Include="src\pong.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="glad.c">
+    <ClCompile Include="src\Shader.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="Shader.cpp">
+    <ClCompile Include="src\Text.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="VAO.cpp">
+    <ClCompile Include="src\VAO.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="VBLayout.cpp">
+    <ClCompile Include="src\VBLayout.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="VBO.cpp">
+    <ClCompile Include="src\VBO.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="Text.cpp">
+    <ClCompile Include="lib\glad.c">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="EBO.h">
+    <ClInclude Include="src\EBO.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="Shader.h">
+    <ClInclude Include="src\Shader.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="VAO.h">
+    <ClInclude Include="src\Text.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="VBLayout.h">
+    <ClInclude Include="src\VAO.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="VBO.h">
+    <ClInclude Include="src\VBLayout.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="Text.h">
+    <ClInclude Include="src\VBO.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
-    <None Include="shader.frag">
+    <None Include="res\shaders\glyph.frag">
       <Filter>Resource Files</Filter>
     </None>
-    <None Include="shader.vert">
+    <None Include="res\shaders\glyph.vert">
       <Filter>Resource Files</Filter>
     </None>
-    <None Include="glyph.vert">
+    <None Include="res\shaders\shader.frag">
       <Filter>Resource Files</Filter>
     </None>
-    <None Include="glyph.frag" />
+    <None Include="res\shaders\shader.vert">
+      <Filter>Resource Files</Filter>
+    </None>
   </ItemGroup>
   <ItemGroup>
-    <Font Include="arial.ttf">
+    <Font Include="res\fonts\arial.ttf">
       <Filter>Resource Files</Filter>
     </Font>
   </ItemGroup>
