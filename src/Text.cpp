@@ -44,12 +44,6 @@ void Text::Load(FT_Face& face)
     FT_Done_Face(face);
 }
 
-void Text::Append(VAO& vao, VBO& vbo)
-{
-    vao = vao;
-    vbo = vbo;
-}
-
 void Text::Render(Shader& s, std::string text, float x, float y, float scale, glm::vec3 color)
 {
     // activate corresponding render state	

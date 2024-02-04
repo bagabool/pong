@@ -10,11 +10,13 @@
 #include <iostream>
 #include <random>
 #include <map>
+#include <format>
 
 #include <ft2build.h>
 #include FT_FREETYPE_H 
 
 void framebuffer_size_callback(GLFWwindow* window, int width, int height);
+void key_callback(GLFWwindow* window, int key, int scancode, int action, int mods);
 void processInput(GLFWwindow* window);
 void processBallMovement();
 void RenderText(Shader& s, std::string text, float x, float y, float scale, glm::vec3 color, VAO& vao, VBO& vbo);
@@ -39,6 +41,10 @@ std::mt19937 gen(rd());
 std::uniform_int_distribution<> distrib(0, 1);
 static float randomAngle = glm::radians(0.0f);
 
+// scoring
+static int playerOneScore = 0;
+static int playerTwoScore = 0;
+static bool gamePaused = true;
 
 int main()
 {
@@ -47,7 +53,7 @@ int main()
     glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
     glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
 
-    GLFWwindow* window = glfwCreateWindow(SCR_WIDTH, SCR_HEIGHT, "LearnOpenGL", NULL, NULL);
+    GLFWwindow* window = glfwCreateWindow(SCR_WIDTH, SCR_HEIGHT, "Pong", NULL, NULL);
     if (window == NULL)
     {
         std::cout << "Failed to create GLFW window" << std::endl;
@@ -56,6 +62,7 @@ int main()
     }
     glfwMakeContextCurrent(window);
     glfwSetFramebufferSizeCallback(window, framebuffer_size_callback);
+    glfwSetKeyCallback(window, key_callback);
 
     if (!gladLoadGLLoader((GLADloadproc)glfwGetProcAddress))
     {
@@ -63,21 +70,15 @@ int main()
         return -1;
     }
 
+    glEnable(GL_BLEND);
+    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+
     FT_Library ft;
     if (FT_Init_FreeType(&ft))
     {
         std::cout << "ERROR::FREETYPE: Could not init FreeType Library" << std::endl;
         return -1;
     }
-
-    FT_Face face;
-    if (FT_New_Face(ft, "res/fonts/arial.ttf", 0, &face))
-    {
-        std::cout << "ERROR::FREETYPE: Failed to load font" << std::endl;
-        return -1;
-    }
-
-    glPixelStorei(GL_UNPACK_ALIGNMENT, 1); // disable byte-alignment restriction
 
     float ballVertices[] = {
          0.25f,  0.25f, 0.0f,  
@@ -129,10 +130,20 @@ int main()
     VBLayout glyphLayout;
     glyphLayout.Push<float>(4);
     glyphVAO.Append(glyphVBO, glyphLayout);
-
     Text text(glyphVAO, glyphVBO);
-    text.Load(face);
-    FT_Done_FreeType(ft);
+
+    FT_Face face;
+    if (FT_New_Face(ft, "res/fonts/arial.ttf", 0, &face))
+    {
+        std::cout << "ERROR::FREETYPE: Failed to load font" << std::endl;
+        return -1;
+    } 
+    else {
+        FT_Set_Pixel_Sizes(face, 0, 48);
+        glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
+        text.Load(face);
+        FT_Done_FreeType(ft);
+    }
 
     // shaders
     Shader ballShader("res/shaders/shader.vert", "res/shaders/shader.frag");
@@ -140,26 +151,11 @@ int main()
     Shader playerTwoShader("res/shaders/shader.vert", "res/shaders/shader.frag");
     Shader glyphShader("res/shaders/glyph.vert", "res/shaders/glyph.frag");
 
-    // ball launching side
-    bool rightSide = distrib(gen) == 0;
+    // glyphs into shader
+    glm::mat4 projection = glm::ortho(0.0f, static_cast<float>(SCR_WIDTH), 0.0f, static_cast<float>(SCR_HEIGHT));
+    glyphShader.Use();
+    glyphShader.setMat4("projection", projection);
 
-    // ball launching angle
-    if (rightSide) {
-        std::uniform_real_distribution<> dis(-90.0, 90.0);
-        randomAngle = glm::radians(dis(gen));
-    }
-    else {
-        std::uniform_real_distribution<> dis(135.0, 225.0);
-        randomAngle = glm::radians(dis(gen));
-    }
-
-    randomAngle = glm::radians(-70.0f);
-
-    glEnable(GL_BLEND);
-    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-
-    glm::mat4 projection = glm::ortho(0.0f, 800.0f, 0.0f, 600.0f);
-    
     while (!glfwWindowShouldClose(window))
     {
         float currentFrame = static_cast<float>(glfwGetTime());
@@ -167,14 +163,23 @@ int main()
         lastFrame = currentFrame;
 
         processInput(window);
-        processBallMovement();
 
         glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
         glClear(GL_COLOR_BUFFER_BIT);
 
         ballShader.Use();
         glm::mat4 ballModel = glm::mat4(1.0f);
-        ballModel = glm::translate(ballModel, glm::vec3(ballXOffset, ballYOffset, 0.0f));
+
+        if (!gamePaused) {
+            ballModel = glm::translate(ballModel, glm::vec3(ballXOffset, ballYOffset, 0.0f));
+            processBallMovement();
+        }
+        else {
+            ballModel = glm::translate(ballModel, glm::vec3(0.0f, 0.0f, 0.0f));
+            ballXOffset = 0.0f;
+            ballYOffset = 0.0f;
+        }
+
         ballModel = glm::scale(ballModel, glm::vec3(0.1f));
         playerTwoShader.setMat4("model", ballModel);
         ballVAO.Bind();
@@ -182,7 +187,14 @@ int main()
 
         playerOneShader.Use();
         glm::mat4 playerOneModel = glm::mat4(1.0f);
-        playerOneModel = glm::translate(playerOneModel, glm::vec3(-0.95f, playerOneYOffset, 0.0f));
+
+        if (!gamePaused)
+            playerOneModel = glm::translate(playerOneModel, glm::vec3(-0.95f, playerOneYOffset, 0.0f));
+        else {
+            playerOneModel = glm::translate(playerOneModel, glm::vec3(-0.95f, 0.0f, 0.0f));
+            playerOneYOffset = 0.0f;
+        }
+
         playerOneModel = glm::scale(playerOneModel, glm::vec3(0.2f, 0.3f, 0.2f));
         playerOneShader.setMat4("model", playerOneModel);
         playerOneVAO.Bind();
@@ -190,14 +202,22 @@ int main()
 
         playerTwoShader.Use();
         glm::mat4 playerTwoModel = glm::mat4(1.0f);
-        playerTwoModel = glm::translate(playerTwoModel, glm::vec3(0.95f, playerTwoYOffset, 0.0f));
+
+        if (!gamePaused)
+            playerTwoModel = glm::translate(playerTwoModel, glm::vec3(0.95f, playerTwoYOffset, 0.0f));
+        else {
+            playerTwoModel = glm::translate(playerTwoModel, glm::vec3(0.95f, 0.0f, 0.0f));
+            playerTwoYOffset = 0.0f;
+        }
+
         playerTwoModel = glm::scale(playerTwoModel, glm::vec3(0.2f, 0.3f, 0.2f));
         playerTwoShader.setMat4("model", playerTwoModel);
         playerTwoVAO.Bind();
         glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
 
-        text.Render(glyphShader, "This is sample text", 25.0f, 25.0f, 1.0f, glm::vec3(0.5, 0.8f, 0.2f));
-        text.Render(glyphShader, "(C) LearnOpenGL.com", 540.0f, 570.0f, 0.5f, glm::vec3(0.3, 0.7f, 0.9f));
+        text.Render(glyphShader, std::format("Player One : {} | Player Two {}", playerOneScore, playerTwoScore), 290.0f, 580.0f, 0.35f, glm::vec3(1.0f, 1.0f, 1.0f));
+        if (gamePaused)
+            text.Render(glyphShader, "Press escape to play", 290.0f, 330.0f, 0.5f, glm::vec3(1.0f, 1.0f, 1.0f));
         
         glfwSwapBuffers(window);
         glfwPollEvents();
@@ -239,37 +259,43 @@ void processBallMovement() {
     float playerTwoMinYOffset = playerTwoYOffset - 0.35f;
     float playerTwoMaxYOffset = playerTwoYOffset + 0.35f;
 
-    if (ballYOffset > 0.95f) {
-        glm::vec3 yUpNormal = glm::vec3(0.0f, -1.0f, 0.0f);
-        glm::vec3 reflect = glm::reflect(direction, yUpNormal);
-        randomAngle = atan2(reflect.y, reflect.x);
-    }
-
-    if (ballYOffset < -0.95f) {
-        glm::vec3 yDownNormal = glm::vec3(0.0f, 1.0f, 0.0f);
-        glm::vec3 reflect = glm::reflect(direction, yDownNormal);
-        randomAngle = atan2(reflect.y, reflect.x);
-    }
-
-    if (ballXOffset > 0.9f) {
-        if (ballYOffset >= playerTwoMinYOffset && ballYOffset <= playerTwoMaxYOffset) {
-            glm::vec3 xRightNormal = glm::vec3(-1.0f, 0.0f, 0.0f);
-            glm::vec3 reflect = glm::reflect(direction, xRightNormal);
+    if (randomAngle != glm::radians(0.0f)) {
+        if (ballYOffset > 0.95f) {
+            glm::vec3 yUpNormal = glm::vec3(0.0f, -1.0f, 0.0f);
+            glm::vec3 reflect = glm::reflect(direction, yUpNormal);
             randomAngle = atan2(reflect.y, reflect.x);
         }
-        else {
-            exit(0);
-        }
-    }
 
-    if (ballXOffset < -0.9f) {
-        if (ballYOffset >= playerOneMinYOffset && ballYOffset <= playerOneMaxYOffset) {
-            glm::vec3 xLeftNormal = glm::vec3(1.0f, 0.0f, 0.0f);
-            glm::vec3 reflect = glm::reflect(direction, xLeftNormal);
+        if (ballYOffset < -0.95f) {
+            glm::vec3 yDownNormal = glm::vec3(0.0f, 1.0f, 0.0f);
+            glm::vec3 reflect = glm::reflect(direction, yDownNormal);
             randomAngle = atan2(reflect.y, reflect.x);
         }
-        else {
-            exit(0);
+
+        if (ballXOffset > 0.9f) {
+            if (ballYOffset >= playerTwoMinYOffset && ballYOffset <= playerTwoMaxYOffset) {
+                glm::vec3 xRightNormal = glm::vec3(-1.0f, 0.0f, 0.0f);
+                glm::vec3 reflect = glm::reflect(direction, xRightNormal);
+                randomAngle = atan2(reflect.y, reflect.x);
+            }
+            else {
+                playerOneScore++;
+                gamePaused = true;
+                randomAngle = glm::radians(0.0f);
+            }
+        }
+
+        if (ballXOffset < -0.9f) {
+            if (ballYOffset >= playerOneMinYOffset && ballYOffset <= playerOneMaxYOffset) {
+                glm::vec3 xLeftNormal = glm::vec3(1.0f, 0.0f, 0.0f);
+                glm::vec3 reflect = glm::reflect(direction, xLeftNormal);
+                randomAngle = atan2(reflect.y, reflect.x);
+            }
+            else {
+                playerTwoScore++;
+                gamePaused = true;
+                randomAngle = glm::radians(0.0f);
+            }
         }
     }
 }
@@ -278,4 +304,24 @@ void processBallMovement() {
 void framebuffer_size_callback(GLFWwindow* window, int width, int height)
 {
     glViewport(0, 0, width, height);
+}
+
+void key_callback(GLFWwindow* window, int key, int scancode, int action, int mods)
+{
+    if (key == GLFW_KEY_SPACE && action == GLFW_PRESS) {
+        gamePaused = !gamePaused;
+
+        // ball launching side
+        bool rightSide = distrib(gen) == 0;
+
+        // ball launching angle
+        if (rightSide) {
+            std::uniform_real_distribution<> dis(-45.0, 45.0);
+            randomAngle = glm::radians(dis(gen));
+        }
+        else {
+            std::uniform_real_distribution<> dis(135.0, 225.0);
+            randomAngle = glm::radians(dis(gen));
+        }
+    }
 }
