@@ -113,7 +113,7 @@
     <Link>
       <SubSystem>Console</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalDependencies>glfw3.lib;opengl32.lib;kernel32.lib;$(CoreLibraryDependencies);%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>glfw3.lib;opengl32.lib;freetyped.lib;kernel32.lib;$(CoreLibraryDependencies);%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
@@ -137,6 +137,7 @@
     <ClCompile Include="glad.c" />
     <ClCompile Include="pong.cpp" />
     <ClCompile Include="Shader.cpp" />
+    <ClCompile Include="Text.cpp" />
     <ClCompile Include="VAO.cpp" />
     <ClCompile Include="VBLayout.cpp" />
     <ClCompile Include="VBO.cpp" />
@@ -144,13 +145,19 @@
   <ItemGroup>
     <ClInclude Include="EBO.h" />
     <ClInclude Include="Shader.h" />
+    <ClInclude Include="Text.h" />
     <ClInclude Include="VAO.h" />
     <ClInclude Include="VBLayout.h" />
     <ClInclude Include="VBO.h" />
   </ItemGroup>
   <ItemGroup>
+    <None Include="glyph.frag" />
+    <None Include="glyph.vert" />
     <None Include="shader.frag" />
     <None Include="shader.vert" />
+  </ItemGroup>
+  <ItemGroup>
+    <Font Include="arial.ttf" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
