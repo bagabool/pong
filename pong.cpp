@@ -67,7 +67,7 @@ int main()
         1, 2, 3   
     };
 
-    // ball VAO
+    // ball vertices
     VAO ballVAO;
     ballVAO.Bind();
     VBO ballVBO(ballVertices, sizeof(ballVertices));
@@ -76,7 +76,7 @@ int main()
     ballLayout.Push<float>(3);
     ballVAO.Append(ballVBO, ballLayout);
 
-    // player one VAO
+    // player one vertices
     VAO playerOneVAO;
     playerOneVAO.Bind();
     VBO playerVBO(playerVertices, sizeof(playerVertices));
@@ -85,7 +85,7 @@ int main()
     playerLayout.Push<float>(3);
     playerOneVAO.Append(playerVBO, playerLayout);
 
-    // player two VAO
+    // player two vertices
     VAO playerTwoVAO;
     playerTwoVAO.Bind();
     ebo.Bind();
@@ -134,7 +134,7 @@ int main()
         glfwSwapBuffers(window);
         glfwPollEvents();
     }
-    
+
     glfwTerminate();
     return 0;
 }

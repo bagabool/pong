@@ -137,7 +137,6 @@
     <ClCompile Include="glad.c" />
     <ClCompile Include="pong.cpp" />
     <ClCompile Include="Shader.cpp" />
-    <ClCompile Include="stbi.cpp" />
     <ClCompile Include="VAO.cpp" />
     <ClCompile Include="VBLayout.cpp" />
     <ClCompile Include="VBO.cpp" />
